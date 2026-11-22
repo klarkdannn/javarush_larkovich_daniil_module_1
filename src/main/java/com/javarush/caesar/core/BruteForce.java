@@ -8,9 +8,16 @@ public class BruteForce {
 
     private static final Set<String> FREQUENT_WORDS = Set.of(
             "и", "в", "не", "на", "что", "с", "по", "это", "как",
-            "к", "у", "из", "за", "от", "а", "же", "ли", "о", "Привет", 
-            "дела", "один", "самые" , "так", "далее" , "ключ"
+            "к", "у", "из", "за", "от", "а", "же", "ли", "о",
+            "привет", "дела", "один", "самые", "так", "далее", "ключ", "мир"
     );
+
+    private static final String[] COMMON_BIGRAMS = {
+            "ст", "но", "то", "на", "ен", "ни", "ко", "по", "ов", "ал",
+            "ер", "ть", "пр", "ос", "го", "ка", "ро", "во", "ор", "ра",
+            "ли", "ие", "ий", "не", "ло", "ан", "ел", "ль", "ет", "еч",
+            "ми", "ри", "ве", "те", "ля", "ей", "чи", "ся", "ир"
+    };
 
     public String decryptByBruteForce(String encryptedText, char[] alphabet) {
         if (encryptedText == null || encryptedText.isEmpty()) {
@@ -47,7 +54,8 @@ public class BruteForce {
     private int score(String text) {
         return punctuationScore(text)
                 + wordLengthScore(text)
-                + frequentWordsScore(text);
+                + frequentWordsScore(text)
+                + bigramScore(text);
     }
 
     /** После (точки/запятой/!/?/:/); ожидаем пробел — поощряем; иначе штрафуем. */
@@ -82,15 +90,29 @@ public class BruteForce {
         return normal - 5 * tooLong;
     }
 
-    /** Частые короткие слова в «каше» почти не встречаются — вес *2. */
+    /** Частые слова после удаления пунктуации. Вес *2. */
     private int frequentWordsScore(String text) {
         String[] words = text.toLowerCase().split("\\s+");
         int count = 0;
         for (String w : words) {
-            if (FREQUENT_WORDS.contains(w)) {
+            String clean = w.replaceAll("[^а-яё]", "");
+            if (!clean.isEmpty() && FREQUENT_WORDS.contains(clean)) {
                 count++;
             }
         }
         return count * 2;
+    }
+
+    /** Русские биграммы — сильный сигнал на коротком тексте. */
+    private int bigramScore(String text) {
+        int score = 0;
+        for (String bg : COMMON_BIGRAMS) {
+            int idx = 0;
+            while ((idx = text.indexOf(bg, idx)) >= 0) {
+                score++;
+                idx += bg.length();
+            }
+        }
+        return score;
     }
 }

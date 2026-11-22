@@ -26,14 +26,14 @@ public class Cipher {
         if (text == null) {
             return "";
         }
-        return process(text, shift);
+        return process(text.toLowerCase(), shift);
     }
 
     public String decrypt(String encryptedText, int shift) throws CipherException {
         if (encryptedText == null) {
             throw new CipherException("Текст для расшифровки не задан");
         }
-        return process(encryptedText, -shift);
+        return process(encryptedText.toLowerCase(), -shift);
     }
 
     private String process(String text, int shift) {
@@ -45,14 +45,11 @@ public class Cipher {
     }
 
     private char shiftChar(char c, int shift) {
-        boolean upper = Character.isUpperCase(c);
-        char lower = Character.toLowerCase(c);
-        Integer idx = index.get(lower);
+        Integer idx = index.get(c);
         if (idx == null) {
             return c; // символа нет в алфавите — оставляем как есть
         }
         int newIdx = Math.floorMod(idx + shift, alphabet.length);
-        char result = alphabet[newIdx];
-        return upper ? Character.toUpperCase(result) : result;
+        return alphabet[newIdx];
     }
 }
